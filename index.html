@@ -207,6 +207,39 @@ canciones.push(...misCanciones);
     if (!confirmar) return;
 
     alert(encontrada.plainLyrics);
+
+const guardarLetra = confirm(
+  "⬇️ ¿Quieres guardar esta letra en Mi biblioteca?"
+);
+
+if (guardarLetra) {
+  const nueva = {
+    id: Date.now(),
+    titulo: encontrada.trackName,
+    artista: encontrada.artistName,
+    letra: encontrada.plainLyrics
+  };
+
+  canciones.push(nueva);
+
+  localStorage.setItem(
+    "misCanciones",
+    JSON.stringify(canciones.filter(c => c.id !== 1))
+  );
+
+  guardadas.push(nueva.id);
+  localStorage.setItem(
+    "biblioteca",
+    JSON.stringify(guardadas)
+  );
+
+  vista = "guardadas";
+  buscar.value = "";
+  dibujar();
+
+  alert("¡Letra guardada en Mi biblioteca!");
+}
+
   } catch (error) {
     alert("No se pudo buscar. Revisa tu conexión.");
   }
