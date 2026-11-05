@@ -110,14 +110,14 @@ canciones.push(...misCanciones);
 
     function dibujar() {
       const texto = buscar.value.toLowerCase();
-      const resultado = canciones.filter(c =>
+      const resultado = canciones.filter(const filtroArtista = artistaBuscar.value.toLowerCase().trim();
         (vista === "todas" || guardadas.includes(c.id)) &&
         (c.titulo.toLowerCase().includes(texto) ||
          c.artista.toLowerCase().includes(texto))
       );
-
-      lista.innerHTML = "";
-      resultado.forEach(c => {
+      const filtradas = resultado.filter(c => c.artista.toLowerCase().includes(filtroArtista));
+     const filtradas = resultado.filter(c => c.artista.toLowerCase().includes(filtroArtista));
+      filtradas.forEach(c => {
         const tarjeta = document.createElement("div");
         tarjeta.className = "song";
         const titulo = document.createElement("h3");
