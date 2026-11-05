@@ -68,6 +68,7 @@
     </div>
     <div id="lista"></div>
   <button onclick="agregarCancion()">➕ Agregar canción</button>
+<button onclick="buscarLetraInternet()">🔎 Buscar letra en internet</button>
   </main>
   <script>
     const canciones = [
@@ -171,7 +172,46 @@ canciones.push(...misCanciones);
 
   alert("¡Canción agregada correctamente!");
 }
-   
+   async function buscarLetraInternet() {
+  const nombre = buscar.value.trim();
+
+  if (!nombre) {
+    alert("Escribe el nombre de una canción.");
+    return;
+  }
+
+  try {
+    const respuesta = await fetch(
+      "https://lrclib.net/api/search?q=" +
+      encodeURIComponent(nombre)
+    );
+
+    if (!respuesta.ok) throw new Error("Error de búsqueda");
+
+    const resultados = await respuesta.json();
+    const encontrada = resultados.find(
+      c => c.plainLyrics && c.plainLyrics.trim()
+    );
+
+    if (!encontrada) {
+      alert("No encontramos una letra para esa canción.");
+      return;
+    }
+
+    const confirmar = confirm(
+      "Encontramos: " + encontrada.trackName +
+      " - " + encontrada.artistName +
+      "\n¿Quieres ver la letra?"
+    );
+
+    if (!confirmar) return;
+
+    alert(encontrada.plainLyrics);
+  } catch (error) {
+    alert("No se pudo buscar. Revisa tu conexión.");
+  }
+}
+
   </script>
 </body>
 </html>
