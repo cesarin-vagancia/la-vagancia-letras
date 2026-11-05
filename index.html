@@ -190,10 +190,9 @@ canciones.push(...misCanciones);
 
     const resultados = await respuesta.json();
 
-const opciones = resultados.filter(
-  c => c.plainLyrics && c.plainLyrics.trim()
-).slice(0, 10);
-
+const opciones = resultados
+  .filter(c => c.trackName && c.artistName)
+  .slice(0, 5);
 if (!opciones.length) {
   alert("No encontramos letras disponibles.");
   return;
@@ -234,7 +233,10 @@ const encontrada = opciones[numero - 1];
     );
 
     if (!confirmar) return;
-
+if (!encontrada.plainLyrics || !encontrada.plainLyrics.trim()) {
+  alert("Esta versión no tiene letra disponible. Elige otra.");
+  return;
+}
     alert(encontrada.plainLyrics);
 
 const guardarLetra = confirm(
