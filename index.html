@@ -189,11 +189,40 @@ canciones.push(...misCanciones);
     if (!respuesta.ok) throw new Error("Error de búsqueda");
 
     const resultados = await respuesta.json();
-    const encontrada = resultados.find(
-      c => c.plainLyrics && c.plainLyrics.trim()
-    );
 
-    if (!encontrada) {
+const opciones = resultados.filter(
+  c => c.plainLyrics && c.plainLyrics.trim()
+).slice(0, 10);
+
+if (!opciones.length) {
+  alert("No encontramos letras disponibles.");
+  return;
+}
+
+const listaOpciones = opciones.map(
+  (c, i) => `${i + 1}. ${c.trackName} - ${c.artistName}`
+).join("\n");
+
+const seleccion = prompt(
+  "Elige el número de la canción:\n\n" + listaOpciones
+);
+
+if (seleccion === null) return;
+
+const numero = Number(seleccion);
+
+if (
+  !Number.isInteger(numero) ||
+  numero < 1 ||
+  numero > opciones.length
+) {
+  alert("Selecciona un número válido.");
+  return;
+}
+
+const encontrada = opciones[numero - 1];
+
+ if (!encontrada) {
       alert("No encontramos una letra para esa canción.");
       return;
     }
