@@ -67,6 +67,7 @@
       <button onclick="mostrar('guardadas')">Mi biblioteca</button>
     </div>
     <div id="lista"></div>
+  <button onclick="agregarCancion()">➕ Agregar canción</button>
   </main>
   <script>
     const canciones = [
@@ -76,7 +77,14 @@
         artista: "Demo",
         letra: "Aquí aparecerá la letra de la canción."
       }
-    ];
+];
+
+    const misCanciones = JSON.parse(
+  localStorage.getItem("misCanciones") || "[]"
+);
+
+canciones.push(...misCanciones);
+
     let vista = "todas";
     let guardadas = JSON.parse(
       localStorage.getItem("biblioteca") || "[]"
@@ -131,6 +139,39 @@
 
     buscar.addEventListener("input", dibujar);
     dibujar();
+ function agregarCancion() {
+  const titulo = prompt("Nombre de la canción:");
+  if (!titulo || !titulo.trim()) return;
+
+  const artista = prompt("Nombre del artista:");
+  if (artista === null) return;
+
+  const letra = prompt("Escribe o pega la letra:");
+  if (letra === null) return;
+
+  const nueva = {
+    id: Date.now(),
+    titulo: titulo.trim(),
+    artista: artista.trim(),
+    letra: letra
+  };
+
+  canciones.push(nueva);
+
+  localStorage.setItem(
+    "misCanciones",
+    JSON.stringify(
+      canciones.filter(c => c.id !== 1)
+    )
+  );
+
+  vista = "todas";
+  buscar.value = "";
+  dibujar();
+
+  alert("¡Canción agregada correctamente!");
+}
+   
   </script>
 </body>
 </html>
