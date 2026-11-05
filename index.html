@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>La Vagancia Letras</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #101114;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    header {
+      background: #1c1e23;
+      padding: 25px 18px;
+      text-align: center;
+    }
+    h1 { margin: 0; color: #f0c46b; }
+    p { color: #aaa; }
+    main { padding: 20px; }
+    input, button {
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+    input {
+      width: 100%;
+      background: #25272c;
+      border: 1px solid #555;
+      color: white;
+    }
+    button {
+      background: #d6a94e;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .tabs { display: flex; gap: 8px; margin: 18px 0; }
+    .tabs button { flex: 1; }
+    .song {
+      background: #202228;
+      padding: 16px;
+      border-radius: 12px;
+      margin: 12px 0;
+    }
+    .song h3 { margin-top: 0; }
+    .song button { margin: 5px 5px 0 0; }
+    pre {
+      white-space: pre-wrap;
+      font-family: inherit;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🎵 La Vagancia Letras</h1>
+    <p>Tu biblioteca musical, siempre contigo</p>
+  </header>
+  <main>
+    <input id="buscar" placeholder="Buscar canciones o artistas...">
+    <div class="tabs">
+      <button onclick="mostrar('todas')">Canciones</button>
+      <button onclick="mostrar('guardadas')">Mi biblioteca</button>
+    </div>
+    <div id="lista"></div>
+  </main>
+  <script>
+    const canciones = [
+      {
+        id: 1,
+        titulo: "Canción de ejemplo",
+        artista: "Demo",
+        letra: "Aquí aparecerá la letra de la canción."
+      }
+    ];
+    let vista = "todas";
+    let guardadas = JSON.parse(
+      localStorage.getItem("biblioteca") || "[]"
+    );
+    const lista = document.getElementById("lista");
+    const buscar = document.getElementById("buscar");
+
+    function mostrar(tipo) {
+      vista = tipo;
+      dibujar();
+    }
+
+    function guardar(id) {
+      if (!guardadas.includes(id)) {
+        guardadas.push(id);
+      } else {
+        guardadas = guardadas.filter(x => x !== id);
+      }
+      localStorage.setItem("biblioteca", JSON.stringify(guardadas));
+      dibujar();
+    }
+
+    function dibujar() {
+      const texto = buscar.value.toLowerCase();
+      const resultado = canciones.filter(c =>
+        (vista === "todas" || guardadas.includes(c.id)) &&
+        (c.titulo.toLowerCase().includes(texto) ||
+         c.artista.toLowerCase().includes(texto))
+      );
+
+      lista.innerHTML = "";
+      resultado.forEach(c => {
+        const tarjeta = document.createElement("div");
+        tarjeta.className = "song";
+        const titulo = document.createElement("h3");
+        titulo.textContent = c.titulo;
+        const artista = document.createElement("p");
+        artista.textContent = c.artista;
+        const letra = document.createElement("pre");
+        letra.textContent = c.letra;
+        const boton = document.createElement("button");
+        boton.textContent = guardadas.includes(c.id)
+          ? "Quitar de biblioteca" : "Guardar canción";
+        boton.onclick = () => guardar(c.id);
+        tarjeta.append(titulo, artista, letra, boton);
+        lista.appendChild(tarjeta);
+      });
+      if (!resultado.length) {
+        lista.textContent = "No hay canciones para mostrar.";
+      }
+    }
+
+    buscar.addEventListener("input", dibujar);
+    dibujar();
+  </script>
+</body>
+</html>
