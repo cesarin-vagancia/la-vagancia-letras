@@ -482,11 +482,12 @@ function convertirResultado(c) {
   };
 }
 
+
 async function buscarInternet() {
   const consulta = buscar.value.trim();
 
   if (!consulta) {
-    alert("Escribe el nombre de una canción o artista.");
+    alert("Escribe una canción o artista.");
     return;
   }
 
@@ -495,36 +496,68 @@ async function buscarInternet() {
   buscando = true;
   botonBuscar.disabled = true;
   botonBuscar.textContent = "Buscando...";
-
-  mensaje.textContent = "Buscando canciones...";
+  mensaje.textContent = "Buscando más canciones...";
   lista.innerHTML = "";
 
   try {
-    const url = "https://lrclib.net/api/search?q=" +
+    const urlLetras =
+      "https://lrclib.net/api/search?q=" +
       encodeURIComponent(consulta);
 
-    const datos = await consultar(url);
+    const urlCatalogo =
+      "https://musicbrainz.org/ws/2/recording/" +
+      "?query=" + encodeURIComponent(consulta) +
+      "&fmt=json&limit=50";
 
-    const encontrados = Array.isArray(datos)
-      ? datos
-      : [];
+    const respuestas = await Promise.allSettled([
+      fetch(urlLetras),
+      fetch(urlCatalogo)
+    ]);
 
-    const convertidos = encontrados
-      .filter(c =>
-        c.trackName &&
-        c.artistName
-      )
-      .map(convertirResultado);
+    let letras = [];
+    let catalogo = [];
 
-    resultadosInternet = quitarDuplicados(
-      convertidos
+    if (respuestas[0].status === "fulfilled" &&
+        respuestas[0].value.ok) {
+      letras = await respuestas[0].value.json();
+    }
+
+    if (respuestas[1].status === "fulfilled" &&
+        respuestas[1].value.ok) {
+      const datos = await respuestas[1].value.json();
+      catalogo = datos.recordings || [];
+    }
+
+    const cancionesConLetra =
+      (Array.isArray(letras) ? letras : [])
+        .filter(c => c.trackName && c.artistName)
+        .map(convertirResultado);
+
+    const cancionesCatalogo = catalogo
+      .filter(c => c.title)
+      .map(c => {
+        const artistas = (c["artist-credit"] || [])
+          .filter(a => a && a.artist)
+          .map(a => a.artist.name);
+
+        return {
+          id: "musicbrainz-" + c.id,
+          titulo: c.title,
+          artista: artistas.join(", ") ||
+            "Artista desconocido",
+          letra: ""
+        };
+      });
+
+    resultadosInternet = quitarDuplicados([
+      ...cancionesConLetra,
+      ...cancionesCatalogo
+    ]);
+
+    resultadosInternet.sort((a, b) =>
+      Number(Boolean(b.letra)) -
+      Number(Boolean(a.letra))
     );
-
-    // Primero las canciones que sí tienen letra.
-    resultadosInternet.sort((a, b) => {
-      return Number(Boolean(b.letra)) -
-        Number(Boolean(a.letra));
-    });
 
     vista = "todas";
     dibujar();
@@ -537,8 +570,7 @@ async function buscarInternet() {
 
   } catch (error) {
     mensaje.textContent =
-      "No se pudo conectar con el buscador. " +
-      "Intenta nuevamente.";
+      "Hubo un problema al buscar canciones.";
   } finally {
     buscando = false;
     botonBuscar.disabled = false;
@@ -546,6 +578,7 @@ async function buscarInternet() {
       "🔎 Buscar letras en internet";
   }
 }
+
 
 function agregarCancion() {
   const titulo = prompt("Nombre de la canción:");
