@@ -159,6 +159,7 @@ pre {
 
   <input
     id="buscar"
+    type="search"
     placeholder="Nombre de canción o artista..."
   >
 
@@ -268,7 +269,9 @@ function guardarDatos() {
 
 function cambiarVista(nuevaVista) {
   vista = nuevaVista;
-
+if (nuevaVista === "biblioteca") {
+  document.getElementById("buscar").value = "";
+}
   document.getElementById("detalle")
     .classList.add("oculto");
 
