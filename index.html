@@ -244,6 +244,7 @@ let canciones = leerGuardado("misCanciones")
 let guardadas = leerGuardado("biblioteca");
 
 let resultadosInternet = [];
+  let cancionesFirebase = [];
 let vista = "todas";
 let detalleActual = null;
 let buscando = false;
@@ -303,7 +304,8 @@ function quitarDuplicados(datos) {
 function obtenerTodas() {
   return quitarDuplicados([
     ...canciones,
-    ...resultadosInternet
+    ...resultadosInternet,
+    ...cancionesFirebase
   ]);
 }
 
@@ -710,6 +712,34 @@ buscar.addEventListener("keydown", e => {
 });
 
 dibujar();
+  
+window.addEventListener("cancionesFirebaseActualizadas", () => {
+  cancionesFirebase = window.cancionesFirebase || [];
+  dibujar();
+});
+
+</script>
+
+<script type="module">
+import { db } from "./firebase.js";
+import {
+  collection, query, where, onSnapshot
+} from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
+
+const consulta = query(
+  collection(db, "canciones"),
+  where("estado", "==", "aprobado")
+);
+
+onSnapshot(consulta, (resultado) => {
+  window.cancionesFirebase = resultado.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
+  window.dispatchEvent(new Event("cancionesFirebaseActualizadas"));
+}, (error) => {
+  console.error("Error al cargar canciones:", error);
+});
 </script>
 
 <script>
