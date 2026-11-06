@@ -212,7 +212,12 @@ pre {
       Guardar en biblioteca
     </button>
   </div>
-
+<div id="controlesScroll" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:15px 0;">
+  <button type="button" onclick="iniciarScroll()">▶ Iniciar</button>
+  <button type="button" onclick="pausarScroll()">⏸ Pausar</button>
+  <label for="velocidadScroll">Velocidad:</label>
+  <input type="range" id="velocidadScroll" min="1" max="10" value="3" style="width:120px;">
+</div>
   <pre id="detalleLetra"></pre>
 
 </section>
@@ -798,5 +803,52 @@ if ("serviceWorker" in navigator) {
   });
 </script>
 
+
+<script>
+let scrollAutomatico = null;
+let ultimoTiempoScroll = 0;
+
+function pausarScroll() {
+  if (scrollAutomatico !== null) {
+    cancelAnimationFrame(scrollAutomatico);
+    scrollAutomatico = null;
+  }
+  ultimoTiempoScroll = 0;
+}
+
+function iniciarScroll() {
+  if (scrollAutomatico !== null) return;
+
+  ultimoTiempoScroll = 0;
+
+  function mover(tiempo) {
+    if (ultimoTiempoScroll) {
+      const velocidad = Number(
+        document.getElementById("velocidadScroll").value
+      );
+
+      const distancia = velocidad * 8 *
+        (tiempo - ultimoTiempoScroll) / 1000;
+
+      window.scrollBy(0, distancia);
+
+      const limite = document.documentElement.scrollHeight -
+        window.innerHeight;
+
+      if (window.scrollY >= limite - 1) {
+        pausarScroll();
+        return;
+      }
+    }
+
+    ultimoTiempoScroll = tiempo;
+    scrollAutomatico = requestAnimationFrame(mover);
+  }
+
+  scrollAutomatico = requestAnimationFrame(mover);
+}
+</script>
+
+  
 </body>
 </html>
