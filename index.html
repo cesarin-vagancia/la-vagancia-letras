@@ -103,42 +103,49 @@ canciones.push(...misCanciones);
         guardadas.push(id);
       } else {
         guardadas = guardadas.filter(x => x !== id);
-      }
-      localStorage.setItem("biblioteca", JSON.stringify(guardadas));
-      dibujar();
-    }
+          }
+  localStorage.setItem("biblioteca", JSON.stringify(guardadas));
+  dibujar();
+}
+  function dibujar() {
+  const texto = buscar.value.toLowerCase().trim();
 
-    function dibujar() {
-      const texto = buscar.value.toLowerCase();
-      const resultado = canciones.filter(const filtroArtista = artistaBuscar.value.toLowerCase().trim();
-        (vista === "todas" || guardadas.includes(c.id)) &&
-        (c.titulo.toLowerCase().includes(texto) ||
-         c.artista.toLowerCase().includes(texto))
-      );
-      const filtradas = resultado.filter(c => c.artista.toLowerCase().includes(filtroArtista));
-     const filtradas = resultado.filter(c => c.artista.toLowerCase().includes(filtroArtista));
-      filtradas.forEach(c => {
-        const tarjeta = document.createElement("div");
-        tarjeta.className = "song";
-        const titulo = document.createElement("h3");
-        titulo.textContent = c.titulo;
-        const artista = document.createElement("p");
-        artista.textContent = c.artista;
-        const letra = document.createElement("pre");
-        letra.textContent = c.letra;
-        const boton = document.createElement("button");
-        boton.textContent = guardadas.includes(c.id)
-          ? "Quitar de biblioteca" : "Guardar canción";
-        boton.onclick = () => guardar(c.id);
-        tarjeta.append(titulo, artista, letra, boton);
-        lista.appendChild(tarjeta);
-      });
-      if (!resultado.length) {
-        lista.textContent = "No hay canciones para mostrar.";
-      }
-    }
+  const resultado = canciones.filter(c =>
+    (vista === "todas" || guardadas.includes(c.id)) &&
+    (c.titulo.toLowerCase().includes(texto) ||
+     c.artista.toLowerCase().includes(texto))
+  );
 
-    buscar.addEventListener("input", dibujar);
+  lista.innerHTML = "";
+
+  resultado.forEach(c => {
+    const tarjeta = document.createElement("div");
+    tarjeta.className = "song";
+
+    const titulo = document.createElement("h3");
+    titulo.textContent = c.titulo;
+
+    const artista = document.createElement("p");
+    artista.textContent = c.artista;
+
+    const letra = document.createElement("pre");
+    letra.textContent = c.letra;
+
+    const boton = document.createElement("button");
+    boton.textContent = guardadas.includes(c.id)
+      ? "Quitar de biblioteca" : "Guardar canción";
+    boton.onclick = () => guardar(c.id);
+
+    tarjeta.append(titulo, artista, letra, boton);
+    lista.appendChild(tarjeta);
+  });
+
+  if (!resultado.length) {
+    lista.textContent = "No hay canciones para mostrar.";
+  }
+}
+
+buscar.addEventListener("input", dibujar);
     dibujar();
  function agregarCancion() {
   const titulo = prompt("Nombre de la canción:");
