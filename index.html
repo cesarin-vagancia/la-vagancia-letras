@@ -219,7 +219,7 @@ pre {
   <input type="range" id="velocidadScroll" min="0" max="100" value="30" style="width:120px;">
 </div>
   <pre id="detalleLetra"></pre>
-
+  <button id="botonCorregirLetra" type="button">✏️ Corregir letra</button>
 </section>
 
 </main>
@@ -456,6 +456,7 @@ function actualizarBotonDetalle() {
 function verLetra(c) {
   detalleActual = c;
 
+  window.detalleActual = c;
   document.getElementById(
     "detalleTitulo"
   ).textContent = c.titulo;
@@ -785,9 +786,9 @@ window.addEventListener("cancionesFirebaseActualizadas", () => {
 </script>
 
 <script type="module">
-import { db } from "./firebase.js";
+import { db, auth } from "./firebase.js";
 import {
-  collection, query, where, onSnapshot
+  collection, query, where, onSnapshot, addDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
 
 const consulta = query(
@@ -804,6 +805,45 @@ onSnapshot(consulta, (resultado) => {
 }, (error) => {
   console.error("Error al cargar canciones:", error);
 });
+
+const botonCorregir = document.getElementById("botonCorregirLetra");
+
+if (botonCorregir) {
+  botonCorregir.addEventListener("click", async () => {
+    if (!detalleActual) {
+      alert("Primero selecciona una canción.");
+      return;
+    }
+
+    const letraActual = detalleActual.letra || "";
+    const nuevaLetra = prompt(
+      "Escribe la letra corregida:",
+      letraActual
+    );
+
+    if (nuevaLetra === null) return;
+
+    if (!nuevaLetra.trim()) {
+      alert("La letra no puede estar vacía.");
+      return;
+    }
+
+    try {
+  await addDoc(collection(db, "solicitudesEdicion"), {
+    cancionId: detalleActual.id,
+    letraPropuesta: nuevaLetra.trim(),
+    autorUid: auth.currentUser?.uid || null,
+    estado: "pendiente",
+    creado: serverTimestamp()
+  });
+  alert("Tu corrección fue enviada para revisión.");
+} catch (error) {
+  console.error(error);
+  alert("No se pudo enviar la corrección.");
+}
+  });
+}
+  
 </script>
 
 <script>
