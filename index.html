@@ -5,22 +5,36 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>La Vagancia Letras</title>
+
 <style>
 * { box-sizing: border-box; }
+
 body {
   margin: 0;
   background: #101114;
   color: white;
   font-family: Arial, sans-serif;
 }
+
 header {
   background: #1c1e23;
   text-align: center;
-  padding: 24px 12px;
+  padding: 25px 12px;
 }
-h1 { color: #f0c46b; margin: 0; }
+
+h1 {
+  color: #f0c46b;
+  margin: 0;
+}
+
 header p { color: #aaa; }
-main { padding: 18px; max-width: 850px; margin: auto; }
+
+main {
+  padding: 18px;
+  max-width: 950px;
+  margin: auto;
+}
+
 input, textarea {
   width: 100%;
   padding: 14px;
@@ -31,7 +45,9 @@ input, textarea {
   color: white;
   font-size: 16px;
 }
+
 textarea { min-height: 180px; }
+
 button {
   background: #d7a94d;
   color: #171717;
@@ -42,10 +58,29 @@ button {
   font-weight: bold;
   cursor: pointer;
 }
+
 button:hover { background: #f0c46b; }
-.menu { display: flex; gap: 8px; margin: 12px 0; }
+
+button:disabled {
+  opacity: .5;
+  cursor: wait;
+}
+
+.menu {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+}
+
 .menu button { flex: 1; }
-.acciones { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
 .song {
   background: #1d1f24;
   padding: 17px;
@@ -53,9 +88,20 @@ button:hover { background: #f0c46b; }
   border: 1px solid #383838;
   border-radius: 12px;
 }
-.song h3 { color: #f0c46b; margin: 0 0 6px; }
+
+.song h3 {
+  color: #f0c46b;
+  margin: 0 0 6px;
+}
+
 .song p { color: #bbb; }
-.preview { white-space: pre-wrap; color: #ddd; }
+
+.preview {
+  white-space: pre-wrap;
+  color: #ddd !important;
+  line-height: 1.5;
+}
+
 pre {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -63,90 +109,195 @@ pre {
   font-size: 17px;
   line-height: 1.8;
 }
-#mensaje { color: #bbb; padding: 10px 0; }
+
+#mensaje {
+  color: #bbb;
+  padding: 10px 0;
+}
+
 .oculto { display: none; }
+
 #detalle {
   background: #1d1f24;
   padding: 20px;
   border-radius: 12px;
 }
+
 #detalle h2 { color: #f0c46b; }
+
+#detalleArtista { color: #bbb; }
+
+.etiqueta {
+  font-size: 13px;
+  color: #aaa;
+}
+
+@media(max-width: 500px) {
+  .menu button { font-size: 13px; }
+  .acciones button { flex: 1; }
+}
 </style>
 </head>
+
 <body>
 
 <header>
   <h1>🎵 La Vagancia Letras</h1>
-  <p>Tus canciones y letras favoritas</p>
+  <p>Encuentra, lee y guarda tus canciones favoritas</p>
 </header>
 
 <main>
-  <section id="inicio">
-    <input id="buscar" placeholder="Buscar canción o artista...">
 
-    <div class="menu">
-      <button onclick="cambiarVista('todas')">Canciones</button>
-      <button onclick="cambiarVista('biblioteca')">Mi biblioteca</button>
-    </div>
+<section id="inicio">
 
-    <div class="acciones">
-      <button onclick="buscarInternet()">🔎 Buscar letras en internet</button>
-      <button onclick="agregarCancion()">＋ Agregar canción</button>
-    </div>
+  <input
+    id="buscar"
+    placeholder="Nombre de canción o artista..."
+  >
 
-    <p id="mensaje"></p>
-    <div id="lista"></div>
-  </section>
+  <div class="menu">
+    <button onclick="cambiarVista('todas')">
+      Canciones
+    </button>
+    <button onclick="cambiarVista('biblioteca')">
+      Mi biblioteca
+    </button>
+  </div>
 
-  <section id="detalle" class="oculto">
-    <button onclick="regresar()">← Volver a canciones</button>
-    <h2 id="detalleTitulo"></h2>
-    <p id="detalleArtista"></p>
-    <div class="acciones">
-      <button id="detalleGuardar">Guardar en biblioteca</button>
-    </div>
-    <pre id="detalleLetra"></pre>
-  </section>
+  <div class="acciones">
+    <button id="botonBuscar" onclick="buscarInternet()">
+      🔎 Buscar letras en internet
+    </button>
+
+    <button onclick="agregarCancion()">
+      ＋ Agregar canción
+    </button>
+  </div>
+
+  <p id="mensaje"></p>
+  <div id="lista"></div>
+
+</section>
+
+<section id="detalle" class="oculto">
+
+  <button onclick="regresar()">
+    ← Volver a canciones
+  </button>
+
+  <h2 id="detalleTitulo"></h2>
+  <p id="detalleArtista"></p>
+
+  <div class="acciones">
+    <button id="detalleGuardar">
+      Guardar en biblioteca
+    </button>
+  </div>
+
+  <pre id="detalleLetra"></pre>
+
+</section>
+
 </main>
 
 <script>
 const buscar = document.getElementById("buscar");
 const lista = document.getElementById("lista");
 const mensaje = document.getElementById("mensaje");
+const botonBuscar = document.getElementById("botonBuscar");
 
-function leerGuardado(clave, defecto) {
+function leerGuardado(clave) {
   try {
     const valor = JSON.parse(localStorage.getItem(clave));
-    return Array.isArray(valor) ? valor : defecto;
+    return Array.isArray(valor) ? valor : [];
   } catch {
-    return defecto;
+    return [];
   }
 }
 
-let canciones = leerGuardado("misCanciones", []);
-let guardadas = leerGuardado("biblioteca", []);
-let vista = "todas";
+function normalizar(texto) {
+  return String(texto || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function limpiarSincronizada(texto) {
+  return String(texto || "")
+    .replace(/\[\d{2}:\d{2}(?:\.\d+)?\]/g, "")
+    .trim();
+}
+
+let canciones = leerGuardado("misCanciones")
+  .filter(c => c && c.titulo && c.artista);
+
+let guardadas = leerGuardado("biblioteca");
+
 let resultadosInternet = [];
+let vista = "todas";
 let detalleActual = null;
+let buscando = false;
 
 function guardarDatos() {
-  localStorage.setItem("misCanciones", JSON.stringify(canciones));
-  localStorage.setItem("biblioteca", JSON.stringify(guardadas));
+  try {
+    localStorage.setItem(
+      "misCanciones",
+      JSON.stringify(canciones)
+    );
+    localStorage.setItem(
+      "biblioteca",
+      JSON.stringify(guardadas)
+    );
+    return true;
+  } catch {
+    alert("No se pudo guardar. Revisa el espacio del navegador.");
+    return false;
+  }
 }
 
 function cambiarVista(nuevaVista) {
   vista = nuevaVista;
-  document.getElementById("detalle").classList.add("oculto");
-  document.getElementById("inicio").classList.remove("oculto");
+
+  document.getElementById("detalle")
+    .classList.add("oculto");
+
+  document.getElementById("inicio")
+    .classList.remove("oculto");
+
   dibujar();
 }
 
-function obtenerTodas() {
+function claveCancion(c) {
+  return normalizar(c.titulo) + "|" +
+    normalizar(c.artista);
+}
+
+function quitarDuplicados(datos) {
   const mapa = new Map();
-  [...canciones, ...resultadosInternet].forEach(c => {
-    mapa.set(String(c.id), c);
+
+  datos.forEach(c => {
+    const clave = claveCancion(c);
+    const anterior = mapa.get(clave);
+
+    if (!anterior ||
+        (!anterior.letra && c.letra) ||
+        (c.letra && c.letra.length >
+         (anterior.letra || "").length)) {
+      mapa.set(clave, c);
+    }
   });
+
   return [...mapa.values()];
+}
+
+function obtenerTodas() {
+  return quitarDuplicados([
+    ...canciones,
+    ...resultadosInternet
+  ]);
 }
 
 function crearBoton(texto, accion) {
@@ -157,21 +308,36 @@ function crearBoton(texto, accion) {
 }
 
 function dibujar() {
-  const texto = buscar.value.toLowerCase().trim();
+  const texto = normalizar(buscar.value);
   lista.innerHTML = "";
 
-  const disponibles = vista === "biblioteca"
-    ? canciones.filter(c => guardadas.includes(c.id))
-    : obtenerTodas();
+  let disponibles;
 
-  const filtradas = disponibles.filter(c =>
-    c.titulo.toLowerCase().includes(texto) ||
-    c.artista.toLowerCase().includes(texto)
-  );
+  if (vista === "biblioteca") {
+    disponibles = canciones.filter(c =>
+      guardadas.includes(c.id)
+    );
+  } else {
+    disponibles = obtenerTodas();
+  }
+
+  const palabras = texto.split(" ").filter(Boolean);
+
+  const filtradas = disponibles.filter(c => {
+    const contenido = normalizar(
+      c.titulo + " " + c.artista
+    );
+
+    return palabras.every(p =>
+      contenido.includes(p)
+    );
+  });
 
   mensaje.textContent = filtradas.length
     ? filtradas.length + " canciones encontradas"
-    : "No hay canciones para mostrar.";
+    : vista === "biblioteca"
+      ? "No hay canciones guardadas."
+      : "No hay canciones para mostrar.";
 
   filtradas.forEach(c => {
     const tarjeta = document.createElement("div");
@@ -187,16 +353,21 @@ function dibujar() {
     primeras.className = "preview";
 
     const letra = c.letra || "";
+
     primeras.textContent = letra
-      ? "Empieza: " + letra.slice(0, 130) +
-        (letra.length > 130 ? "..." : "")
+      ? "Empieza: " +
+        letra.slice(0, 150) +
+        (letra.length > 150 ? "..." : "")
       : "Letra no disponible.";
 
     const acciones = document.createElement("div");
     acciones.className = "acciones";
 
     acciones.appendChild(
-      crearBoton("Ver letra completa", () => verLetra(c))
+      crearBoton(
+        "Ver letra completa",
+        () => verLetra(c)
+      )
     );
 
     acciones.appendChild(
@@ -208,16 +379,25 @@ function dibujar() {
       )
     );
 
-    tarjeta.append(titulo, artista, primeras, acciones);
+    tarjeta.append(
+      titulo,
+      artista,
+      primeras,
+      acciones
+    );
+
     lista.appendChild(tarjeta);
   });
 }
 
 function guardar(c) {
   if (guardadas.includes(c.id)) {
-    guardadas = guardadas.filter(id => id !== c.id);
+    guardadas = guardadas.filter(
+      id => id !== c.id
+    );
   } else {
     guardadas.push(c.id);
+
     if (!canciones.some(x => x.id === c.id)) {
       canciones.push(c);
     }
@@ -226,106 +406,167 @@ function guardar(c) {
   guardarDatos();
   dibujar();
 
-  if (detalleActual && detalleActual.id === c.id) {
+  if (detalleActual &&
+      detalleActual.id === c.id) {
     actualizarBotonDetalle();
   }
 }
 
 function actualizarBotonDetalle() {
-  const boton = document.getElementById("detalleGuardar");
-  boton.textContent = guardadas.includes(detalleActual.id)
-    ? "Quitar de biblioteca"
-    : "Guardar en biblioteca";
+  const boton = document.getElementById(
+    "detalleGuardar"
+  );
+
+  boton.textContent =
+    guardadas.includes(detalleActual.id)
+      ? "Quitar de biblioteca"
+      : "Guardar en biblioteca";
+
   boton.onclick = () => guardar(detalleActual);
 }
 
 function verLetra(c) {
   detalleActual = c;
-  document.getElementById("detalleTitulo").textContent = c.titulo;
-  document.getElementById("detalleArtista").textContent = c.artista;
-  document.getElementById("detalleLetra").textContent =
-    c.letra || "La letra completa no está disponible.";
+
+  document.getElementById(
+    "detalleTitulo"
+  ).textContent = c.titulo;
+
+  document.getElementById(
+    "detalleArtista"
+  ).textContent = c.artista;
+
+  document.getElementById(
+    "detalleLetra"
+  ).textContent = c.letra ||
+    "La letra completa no está disponible.";
 
   actualizarBotonDetalle();
 
-  document.getElementById("inicio").classList.add("oculto");
-  document.getElementById("detalle").classList.remove("oculto");
+  document.getElementById("inicio")
+    .classList.add("oculto");
+
+  document.getElementById("detalle")
+    .classList.remove("oculto");
+
   window.scrollTo(0, 0);
 }
 
 function regresar() {
-  document.getElementById("detalle").classList.add("oculto");
-  document.getElementById("inicio").classList.remove("oculto");
+  document.getElementById("detalle")
+    .classList.add("oculto");
+
+  document.getElementById("inicio")
+    .classList.remove("oculto");
+
   dibujar();
 }
 
-async function buscarInternet() {
-  const nombre = buscar.value.trim();
+async function consultar(url) {
+  const respuesta = await fetch(url);
 
-  if (!nombre) {
+  if (!respuesta.ok) {
+    throw new Error("Error de búsqueda");
+  }
+
+  return await respuesta.json();
+}
+
+function convertirResultado(c) {
+  return {
+    id: "internet-" + c.id,
+    titulo: c.trackName,
+    artista: c.artistName,
+    letra: c.plainLyrics ||
+      limpiarSincronizada(c.syncedLyrics || "")
+  };
+}
+
+async function buscarInternet() {
+  const consulta = buscar.value.trim();
+
+  if (!consulta) {
     alert("Escribe el nombre de una canción o artista.");
     return;
   }
 
-  mensaje.textContent = "Buscando letras en internet...";
+  if (buscando) return;
+
+  buscando = true;
+  botonBuscar.disabled = true;
+  botonBuscar.textContent = "Buscando...";
+
+  mensaje.textContent = "Buscando canciones...";
   lista.innerHTML = "";
 
   try {
     const url = "https://lrclib.net/api/search?q=" +
-      encodeURIComponent(nombre);
+      encodeURIComponent(consulta);
 
-    const respuesta = await fetch(url);
+    const datos = await consultar(url);
 
-    if (!respuesta.ok) {
-      throw new Error("Error al consultar el servicio");
-    }
+    const encontrados = Array.isArray(datos)
+      ? datos
+      : [];
 
-    const datos = await respuesta.json();
+    const convertidos = encontrados
+      .filter(c =>
+        c.trackName &&
+        c.artistName
+      )
+      .map(convertirResultado);
 
-    resultadosInternet = datos
-      .filter(c => c.trackName && c.artistName)
-      .map(c => ({
-        id: "internet-" + c.id,
-        titulo: c.trackName,
-        artista: c.artistName,
-        letra: c.plainLyrics ||
-          limpiarSincronizada(c.syncedLyrics || "")
-      }));
+    resultadosInternet = quitarDuplicados(
+      convertidos
+    );
+
+    // Primero las canciones que sí tienen letra.
+    resultadosInternet.sort((a, b) => {
+      return Number(Boolean(b.letra)) -
+        Number(Boolean(a.letra));
+    });
 
     vista = "todas";
     dibujar();
 
     if (!resultadosInternet.length) {
       mensaje.textContent =
-        "No se encontraron letras. Prueba con otro nombre o artista.";
+        "No se encontraron canciones. " +
+        "Prueba con otro nombre o artista.";
     }
 
   } catch (error) {
     mensaje.textContent =
-      "No se pudo conectar con el buscador. Intenta de nuevo.";
+      "No se pudo conectar con el buscador. " +
+      "Intenta nuevamente.";
+  } finally {
+    buscando = false;
+    botonBuscar.disabled = false;
+    botonBuscar.textContent =
+      "🔎 Buscar letras en internet";
   }
-}
-
-function limpiarSincronizada(texto) {
-  return texto
-    .replace(/\[\d{2}:\d{2}(?:\.\d+)?\]/g, "")
-    .trim();
 }
 
 function agregarCancion() {
   const titulo = prompt("Nombre de la canción:");
+
   if (!titulo || !titulo.trim()) return;
 
   const artista = prompt("Nombre del artista:");
+
   if (artista === null) return;
 
-  const letra = prompt("Pega aquí la letra completa:");
+  const letra = prompt(
+    "Pega aquí la letra completa:"
+  );
+
   if (letra === null) return;
 
   const nueva = {
     id: "manual-" + Date.now(),
     titulo: titulo.trim(),
-    artista: artista.trim() || "Artista desconocido",
+    artista: artista.trim() ||
+      "Artista desconocido",
     letra: letra.trim()
   };
 
@@ -340,6 +581,13 @@ function agregarCancion() {
 }
 
 buscar.addEventListener("input", dibujar);
+
+buscar.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    buscarInternet();
+  }
+});
+
 dibujar();
 </script>
 
