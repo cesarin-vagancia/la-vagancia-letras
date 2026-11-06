@@ -709,5 +709,15 @@ buscar.addEventListener("keydown", e => {
 dibujar();
 </script>
 
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+  navigator.serviceWorker.register("./sw.js")
+      .then(() => console.log("La Vagancia Letras activada"))
+      .catch(error => console.log("Error:", error));
+  });
+}
+</script>
+
 </body>
 </html>
