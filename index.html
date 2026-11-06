@@ -452,50 +452,84 @@ function verLetra(c) {
   window.scrollTo(0, 0);
 }
 
+
 async function buscarLetraFaltante(c) {
   if (c.letra) return;
 
   const elemento = document.getElementById("detalleLetra");
   elemento.textContent = "Buscando letra automáticamente...";
 
+  const normalizar = texto => (texto || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+
+  let letraEncontrada = "";
+
+  // Primera fuente: LRCLIB
   try {
     const url = "https://lrclib.net/api/search?" +
       "track_name=" + encodeURIComponent(c.titulo) +
       "&artist_name=" + encodeURIComponent(c.artista);
 
     const respuesta = await fetch(url);
-    if (!respuesta.ok) throw new Error("Error de búsqueda");
 
-    const resultados = await respuesta.json();
+    if (respuesta.ok) {
+      const resultados = await respuesta.json();
 
-    const normalizar = texto => (texto || "")
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase()
-      .trim();
+      const encontrada = resultados.find(r =>
+        normalizar(r.trackName) === normalizar(c.titulo) &&
+        normalizar(r.artistName) === normalizar(c.artista) &&
+        (r.plainLyrics || r.syncedLyrics)
+      );
 
-    const encontrada = resultados.find(r =>
-      normalizar(r.trackName) === normalizar(c.titulo) &&
-      normalizar(r.artistName) === normalizar(c.artista) &&
-      (r.plainLyrics || r.syncedLyrics)
-    );
-
-    if (encontrada) {
-      c.letra = encontrada.plainLyrics ||
-        limpiarSincronizada(encontrada.syncedLyrics || "");
-
-      if (detalleActual === c) {
-        elemento.textContent = c.letra;
+      if (encontrada) {
+        letraEncontrada = encontrada.plainLyrics ||
+          limpiarSincronizada(encontrada.syncedLyrics || "");
       }
-    } else if (detalleActual === c) {
-      elemento.textContent = "La letra completa no está disponible.";
     }
   } catch (error) {
+    console.log("LRCLIB no respondió:", error);
+  }
+
+  // Segunda fuente: Lyrics.ovh
+  if (!letraEncontrada) {
     if (detalleActual === c) {
-      elemento.textContent = "No se pudo buscar la letra. Intenta más tarde.";
+      elemento.textContent = "Buscando en otra fuente...";
+    }
+
+    try {
+      const url = "https://api.lyrics.ovh/v1/" +
+        encodeURIComponent(c.artista) + "/" +
+        encodeURIComponent(c.titulo);
+
+      const respuesta = await fetch(url);
+
+      if (respuesta.ok) {
+        const datos = await respuesta.json();
+
+        if (datos.lyrics && datos.lyrics.trim()) {
+          letraEncontrada = datos.lyrics.trim();
+        }
+      }
+    } catch (error) {
+      console.log("Lyrics.ovh no respondió:", error);
     }
   }
+
+  if (letraEncontrada) {
+    c.letra = letraEncontrada;
+
+    if (detalleActual === c) {
+      elemento.textContent = c.letra;
+    }
+  } else if (detalleActual === c) {
+    elemento.textContent =
+      "La letra completa no está disponible en las fuentes consultadas.";
+  }
 }
+
 
 function regresar() {
   document.getElementById("detalle")
