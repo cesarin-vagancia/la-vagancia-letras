@@ -157,13 +157,14 @@ pre {
 
 <section id="inicio">
 
-  <input
+ <div style="position:relative;"> <input
     id="buscar"
     type="search"
     placeholder="Nombre de canción o artista..."
     oninput="dibujar()"
   >
-
+<button type="button" onclick="document.getElementById('buscar').value=''; dibujar();" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:transparent;color:#888;border:0;font-size:24px;padding:4px;cursor:pointer;">×</button>
+</div>
   <div class="menu">
     <button onclick="cambiarVista('todas')">
       Canciones
