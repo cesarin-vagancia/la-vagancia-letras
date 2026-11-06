@@ -687,6 +687,53 @@ async function buscarInternet() {
 }
 
 
+function abrirEditorLetra() {
+  return new Promise((resolver) => {
+    const fondo = document.createElement("div");
+    fondo.style.cssText = "position:fixed;inset:0;background:#000b;z-index:99999;display:flex;align-items:center;justify-content:center;padding:15px;";
+
+    const cuadro = document.createElement("div");
+    cuadro.style.cssText = "background:#202127;color:white;padding:20px;border-radius:12px;width:100%;max-width:650px;max-height:90vh;overflow:auto;";
+
+    const titulo = document.createElement("h2");
+    titulo.textContent = "Escribir letra de la canción";
+
+    const instrucciones = document.createElement("p");
+    instrucciones.textContent = "Separa las estrofas dejando una línea vacía.";
+
+    const editor = document.createElement("textarea");
+    editor.rows = 14;
+    editor.placeholder = "Primera estrofa...\n\nSegunda estrofa...\n\n[Instrumental]\n\nTercera estrofa...";
+    editor.style.cssText = "width:100%;box-sizing:border-box;padding:12px;font-size:17px;line-height:1.6;border-radius:8px;resize:vertical;";
+
+    const guardar = document.createElement("button");
+    guardar.textContent = "Guardar letra";
+
+    const cancelar = document.createElement("button");
+    cancelar.textContent = "Cancelar";
+    cancelar.style.marginLeft = "10px";
+
+    guardar.onclick = () => {
+      if (!editor.value.trim()) {
+        alert("Escribe la letra de la canción.");
+        return;
+      }
+      fondo.remove();
+      resolver(editor.value);
+    };
+
+    cancelar.onclick = () => {
+      fondo.remove();
+      resolver(null);
+    };
+
+    cuadro.append(titulo, instrucciones, editor, guardar, cancelar);
+    fondo.appendChild(cuadro);
+    document.body.appendChild(fondo);
+    editor.focus();
+  });
+}
+
 async function agregarCancion() {
   const titulo = prompt("Nombre de la canción:");
 
@@ -696,9 +743,7 @@ async function agregarCancion() {
 
   if (artista === null) return;
 
-  const letra = prompt(
-    "Pega aquí la letra completa:"
-  );
+  const letra = await abrirEditorLetra();
 
   if (letra === null) return;
 
