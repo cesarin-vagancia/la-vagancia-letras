@@ -440,7 +440,7 @@ function verLetra(c) {
     "detalleLetra"
   ).textContent = c.letra ||
     "La letra completa no está disponible.";
-
+  if (!c.letra) buscarLetraFaltante(c);
   actualizarBotonDetalle();
 
   document.getElementById("inicio")
@@ -450,6 +450,51 @@ function verLetra(c) {
     .classList.remove("oculto");
 
   window.scrollTo(0, 0);
+}
+
+async function buscarLetraFaltante(c) {
+  if (c.letra) return;
+
+  const elemento = document.getElementById("detalleLetra");
+  elemento.textContent = "Buscando letra automáticamente...";
+
+  try {
+    const url = "https://lrclib.net/api/search?" +
+      "track_name=" + encodeURIComponent(c.titulo) +
+      "&artist_name=" + encodeURIComponent(c.artista);
+
+    const respuesta = await fetch(url);
+    if (!respuesta.ok) throw new Error("Error de búsqueda");
+
+    const resultados = await respuesta.json();
+
+    const normalizar = texto => (texto || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim();
+
+    const encontrada = resultados.find(r =>
+      normalizar(r.trackName) === normalizar(c.titulo) &&
+      normalizar(r.artistName) === normalizar(c.artista) &&
+      (r.plainLyrics || r.syncedLyrics)
+    );
+
+    if (encontrada) {
+      c.letra = encontrada.plainLyrics ||
+        limpiarSincronizada(encontrada.syncedLyrics || "");
+
+      if (detalleActual === c) {
+        elemento.textContent = c.letra;
+      }
+    } else if (detalleActual === c) {
+      elemento.textContent = "La letra completa no está disponible.";
+    }
+  } catch (error) {
+    if (detalleActual === c) {
+      elemento.textContent = "No se pudo buscar la letra. Intenta más tarde.";
+    }
+  }
 }
 
 function regresar() {
