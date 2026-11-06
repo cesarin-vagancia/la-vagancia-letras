@@ -285,9 +285,7 @@ function guardarDatos() {
 
 function cambiarVista(nuevaVista) {
   vista = nuevaVista;
-if (nuevaVista === "biblioteca") {
-  document.getElementById("buscar").value = "";
-}
+document.getElementById("buscar").value = "";
   document.getElementById("detalle")
     .classList.add("oculto");
 
