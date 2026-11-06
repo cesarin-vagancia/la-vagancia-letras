@@ -820,7 +820,7 @@ function iniciarScroll() {
   if (scrollAutomatico !== null) return;
 
   ultimoTiempoScroll = 0;
-
+let acumuladoScroll = 0;
   function mover(tiempo) {
     if (ultimoTiempoScroll) {
       const velocidad = Number(
@@ -830,7 +830,12 @@ function iniciarScroll() {
       const distancia = velocidad * 0.01 *
         (tiempo - ultimoTiempoScroll) / 1000;
 
-      window.scrollBy(0, distancia);
+      acumuladoScroll += distancia;
+if (acumuladoScroll >= 1) {
+  const pixeles = Math.floor(acumuladoScroll);
+  window.scrollBy(0, pixeles);
+  acumuladoScroll -= pixeles;
+}
 
       const limite = document.documentElement.scrollHeight -
         window.innerHeight;
