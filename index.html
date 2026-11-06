@@ -177,7 +177,7 @@ pre {
     </button>
 
     <button onclick="agregarCancion()">
-      ＋ Agregar canción
+     + Agregar canción
     </button>
   </div>
 
@@ -666,7 +666,7 @@ async function buscarInternet() {
 }
 
 
-function agregarCancion() {
+async function agregarCancion() {
   const titulo = prompt("Nombre de la canción:");
 
   if (!titulo || !titulo.trim()) return;
@@ -691,7 +691,9 @@ function agregarCancion() {
 
   canciones.push(nueva);
   guardarDatos();
-
+if (window.enviarCancionFirebase) {
+  await window.enviarCancionFirebase(nueva);
+}
   vista = "todas";
   buscar.value = "";
   dibujar();
