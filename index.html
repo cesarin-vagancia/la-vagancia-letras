@@ -720,5 +720,37 @@ if ("serviceWorker" in navigator) {
 }
 </script>
 
+<div id="acceso-google" style="position:fixed;bottom:20px;right:20px;z-index:9999;">
+  <button id="btn-google" style="padding:12px;background:#d9aa4e;border:0;border-radius:10px;font-weight:bold;">
+    Iniciar sesión con Google
+  </button>
+  <span id="usuario-google" style="display:none;background:#202127;padding:12px;border-radius:10px;"></span>
+</div>
+
+<script type="module">
+  import { auth, googleProvider } from "./firebase.js";
+  import {
+    signInWithPopup,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js";
+
+  const boton = document.getElementById("btn-google");
+  const usuario = document.getElementById("usuario-google");
+
+  boton.addEventListener("click", async () => {
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (error) {
+      alert("No se pudo iniciar sesión: " + error.message);
+    }
+  });
+
+  onAuthStateChanged(auth, (user) => {
+    boton.style.display = user ? "none" : "inline-block";
+    usuario.style.display = user ? "inline-block" : "none";
+    usuario.textContent = user ? "Hola, " + (user.displayName || "músico") : "";
+  });
+</script>
+
 </body>
 </html>
