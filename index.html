@@ -827,7 +827,7 @@ let acumuladoScroll = 0;
         document.getElementById("velocidadScroll").value
       );
 
-      const distancia = (velocidad * 0.3) *
+      const distancia = (velocidad * 0.5) *
 (tiempo - ultimoTiempoScroll) / 1000;
       acumuladoScroll += distancia;
 if (acumuladoScroll >= 1) {
