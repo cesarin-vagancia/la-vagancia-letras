@@ -1,5 +1,5 @@
 
-const CACHE = "la-vagancia-letras-v2";
+const CACHE = "la-vagancia-letras-v3";
 const BASE = "/la-vagancia-letras/";
 
 const ARCHIVOS = [
