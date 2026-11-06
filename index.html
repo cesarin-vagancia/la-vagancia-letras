@@ -338,7 +338,9 @@ function crearBoton(texto, accion) {
 function dibujar() {
   const texto = normalizar(buscar.value);
   lista.innerHTML = "";
-
+if (texto === "" && vista !== "biblioteca") {
+    return;
+}
   let disponibles;
 
   if (vista === "biblioteca") {
