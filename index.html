@@ -216,7 +216,7 @@ pre {
   <button type="button" onclick="iniciarScroll()">▶ Iniciar</button>
   <button type="button" onclick="pausarScroll()">⏸ Pausar</button>
   <label for="velocidadScroll">Velocidad:</label>
-  <input type="range" id="velocidadScroll" min="1" max="10" value="3" style="width:120px;">
+  <input type="range" id="velocidadScroll" min="0" max="100" value="30" style="width:120px;">
 </div>
   <pre id="detalleLetra"></pre>
 
@@ -827,9 +827,8 @@ let acumuladoScroll = 0;
         document.getElementById("velocidadScroll").value
       );
 
-      const distancia = velocidad * 0.01 *
-        (tiempo - ultimoTiempoScroll) / 1000;
-
+      const distancia = (velocidad * 0.3) *
+(tiempo - ultimoTiempoScroll) / 1000;
       acumuladoScroll += distancia;
 if (acumuladoScroll >= 1) {
   const pixeles = Math.floor(acumuladoScroll);
