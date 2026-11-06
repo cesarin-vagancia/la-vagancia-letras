@@ -161,8 +161,9 @@ pre {
     id="buscar"
     type="search"
     placeholder="Nombre de canción o artista..."
+    oninput="dibujar()"
   >
-
+<button type="button" onclick="document.getElementById('buscar').value=''; dibujar();">✕ Borrar búsqueda</button>
   <div class="menu">
     <button onclick="cambiarVista('todas')">
       Canciones
