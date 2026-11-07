@@ -43,3 +43,26 @@ window.enviarCancionFirebase = async function(cancion) {
     alert("No se pudo enviar la canción: " + error.message);
   }
 };
+
+import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
+
+window.aprobarCorreccion = async function(solicitudId, cancionId, nuevaLetra) {
+  if (!auth.currentUser) {
+    alert("Debes iniciar sesión.");
+    return;
+  }
+
+  try {
+    await updateDoc(doc(db, "canciones", cancionId), {
+      letra: nuevaLetra
+    });
+
+    await updateDoc(doc(db, "solicitudesEdicion", solicitudId), {
+      estado: "aprobado"
+    });
+
+    alert("Corrección aprobada correctamente.");
+  } catch (error) {
+    alert("Error: " + error.message);
+  }
+};
