@@ -850,8 +850,8 @@ if (botonCorregir) {
   });
   alert("Tu corrección fue enviada para revisión.");
 } catch (error) {
-  console.error(error);
-  alert("No se pudo enviar la corrección.");
+  alert("Error: " + error.code + " - " + error.message);
+  
 }
   });
 }
