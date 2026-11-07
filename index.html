@@ -1063,6 +1063,7 @@ async function cargarCorrecciones() {
     }
   } catch (error) {
     lista.textContent = "Error: " + error.message;
+    console.error("Error al cargar correcciones:", error);
   }
 }
 </script>
