@@ -950,6 +950,122 @@ if (acumuladoScroll >= 1) {
 }
 </script>
 
+
   
+<div id="panel-correcciones" style="display:none;position:fixed;inset:0;background:#111;color:white;z-index:10000;overflow:auto;padding:20px;">
+  <button id="cerrar-correcciones">✕ Cerrar</button>
+  <h2>Correcciones pendientes</h2>
+  <div id="lista-correcciones">Cargando...</div>
+</div>
+
+<script type="module">
+import { auth, db } from "./firebase.js";
+import {
+  collection, query, where, getDocs,
+  doc, getDoc, updateDoc, writeBatch
+} from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js";
+
+const ADMIN_UID = "hTPkZWSyOUTkH264wsmsLXV4djt2";
+const panel = document.getElementById("panel-correcciones");
+const lista = document.getElementById("lista-correcciones");
+
+const acceso = document.createElement("button");
+acceso.textContent = "📝 Revisar correcciones";
+acceso.style.cssText = "position:fixed;bottom:75px;right:20px;z-index:9999;padding:12px;background:#d9aa4e;border:0;border-radius:10px;";
+acceso.style.display = "none";
+document.body.appendChild(acceso);
+
+onAuthStateChanged(auth, user => {
+  const admin = user?.uid === ADMIN_UID;
+  acceso.style.display = admin ? "block" : "none";
+  if (!admin) panel.style.display = "none";
+});
+
+acceso.onclick = async () => {
+  if (auth.currentUser?.uid !== ADMIN_UID) return;
+  panel.style.display = "block";
+  await cargarCorrecciones();
+};
+
+document.getElementById("cerrar-correcciones").onclick = () => {
+  panel.style.display = "none";
+};
+
+async function cargarCorrecciones() {
+  lista.textContent = "Cargando...";
+  try {
+    const consulta = query(
+      collection(db, "solicitudesEdicion"),
+      where("estado", "==", "pendiente")
+    );
+    const resultado = await getDocs(consulta);
+    lista.replaceChildren();
+
+    if (resultado.empty) {
+      lista.textContent = "No hay correcciones pendientes.";
+      return;
+    }
+
+    for (const solicitud of resultado.docs) {
+      const datos = solicitud.data();
+      const tarjeta = document.createElement("div");
+      tarjeta.style.cssText = "padding:15px;margin:12px 0;background:#292929;border-radius:10px;";
+
+      const cancion = await getDoc(doc(db, "canciones", datos.cancionId));
+      const titulo = document.createElement("h3");
+      titulo.textContent = cancion.exists()
+        ? cancion.data().titulo
+        : "Canción no encontrada";
+
+      const letra = document.createElement("pre");
+      letra.textContent = datos.letraPropuesta;
+      letra.style.cssText = "white-space:pre-wrap;overflow-wrap:anywhere;";
+
+      const aprobar = document.createElement("button");
+      aprobar.textContent = "✅ Aprobar";
+      aprobar.disabled = !cancion.exists();
+
+      const rechazar = document.createElement("button");
+      rechazar.textContent = "❌ Rechazar";
+      rechazar.style.marginLeft = "10px";
+
+      aprobar.onclick = async () => {
+        if (auth.currentUser?.uid !== ADMIN_UID) return;
+        if (!confirm("¿Aprobar y reemplazar la letra original?")) return;
+        try {
+          const lote = writeBatch(db);
+          lote.update(doc(db, "canciones", datos.cancionId), {
+            letra: datos.letraPropuesta
+          });
+          lote.update(solicitud.ref, { estado: "aprobado" });
+          await lote.commit();
+          alert("Corrección aprobada.");
+          await cargarCorrecciones();
+        } catch (error) {
+          alert("Error: " + error.message);
+        }
+      };
+
+      rechazar.onclick = async () => {
+        if (auth.currentUser?.uid !== ADMIN_UID) return;
+        if (!confirm("¿Rechazar esta corrección?")) return;
+        try {
+          await updateDoc(solicitud.ref, { estado: "rechazado" });
+          await cargarCorrecciones();
+        } catch (error) {
+          alert("Error: " + error.message);
+        }
+      };
+
+      tarjeta.append(titulo, letra, aprobar, rechazar);
+      lista.appendChild(tarjeta);
+    }
+  } catch (error) {
+    lista.textContent = "Error: " + error.message;
+  }
+}
+</script>
+
 </body>
 </html>
