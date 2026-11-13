@@ -325,12 +325,31 @@ function quitarDuplicados(datos) {
   return [...mapa.values()];
 }
 
+// Firebase tiene prioridad sobre copias locales o resultados de internet.
 function obtenerTodas() {
-  return quitarDuplicados([
-    ...canciones,
-    ...resultadosInternet,
-    ...cancionesFirebase
-  ]);
+  const mapa = new Map();
+  for (const c of quitarDuplicados([...canciones, ...resultadosInternet])) {
+    mapa.set(claveCancion(c), c);
+  }
+  for (const c of cancionesFirebase) {
+    mapa.set(claveCancion(c), c);
+  }
+  return [...mapa.values()];
+}
+
+// Conserva los IDs guardados, pero usa la letra aprobada más reciente.
+function obtenerBiblioteca() {
+  return obtenerTodas().filter(c =>
+    guardadas.includes(c.id) || canciones.some(local =>
+      guardadas.includes(local.id) && claveCancion(local) === claveCancion(c)
+    )
+  );
+}
+
+function estaGuardada(c) {
+  return guardadas.includes(c.id) || canciones.some(local =>
+    guardadas.includes(local.id) && claveCancion(local) === claveCancion(c)
+  );
 }
 
 function crearBoton(texto, accion) {
@@ -349,9 +368,7 @@ if (texto === "" && vista !== "biblioteca") {
   let disponibles;
 
   if (vista === "biblioteca") {
-    disponibles = canciones.filter(c =>
-      guardadas.includes(c.id)
-    );
+    disponibles = obtenerBiblioteca();
   } else {
     disponibles = obtenerTodas();
   }
@@ -426,37 +443,26 @@ if (texto === "" && vista !== "biblioteca") {
 }
 
 function guardar(c) {
-  if (guardadas.includes(c.id)) {
-    guardadas = guardadas.filter(
-      id => id !== c.id
-    );
+  const clave = claveCancion(c);
+  const idsRelacionados = new Set([c.id, ...canciones
+    .filter(x => claveCancion(x) === clave).map(x => x.id)]);
+  if (estaGuardada(c)) {
+    guardadas = guardadas.filter(id => !idsRelacionados.has(id));
   } else {
     guardadas.push(c.id);
-
-    if (!canciones.some(x => x.id === c.id)) {
-      canciones.push(c);
-    }
+    if (!canciones.some(x => x.id === c.id)) canciones.push({...c});
   }
-
   guardarDatos();
   dibujar();
-
-  if (detalleActual &&
-      detalleActual.id === c.id) {
+  if (detalleActual && claveCancion(detalleActual) === clave) {
     actualizarBotonDetalle();
   }
 }
 
 function actualizarBotonDetalle() {
-  const boton = document.getElementById(
-    "detalleGuardar"
-  );
-
-  boton.textContent =
-    guardadas.includes(detalleActual.id)
-      ? "Quitar de biblioteca"
-      : "Guardar en biblioteca";
-
+  const boton = document.getElementById("detalleGuardar");
+  boton.textContent = estaGuardada(detalleActual)
+    ? "Quitar de biblioteca" : "Guardar en biblioteca";
   boton.onclick = () => guardar(detalleActual);
 }
 
@@ -788,6 +794,33 @@ dibujar();
   
 window.addEventListener("cancionesFirebaseActualizadas", () => {
   cancionesFirebase = window.cancionesFirebase || [];
+  // Actualizar copias locales para que también funcionen sin internet.
+  let cambio = false;
+  for (const remota of cancionesFirebase) {
+    for (let i = 0; i < canciones.length; i++) {
+      const local = canciones[i];
+      if (local.id === remota.id || claveCancion(local) === claveCancion(remota)) {
+        if (local.letra !== remota.letra) {
+          canciones[i] = {...local, letra: remota.letra};
+          cambio = true;
+        }
+      }
+    }
+  }
+  if (cambio) guardarDatos();
+  // Refrescar la canción abierta sin cerrar la pantalla.
+  if (detalleActual) {
+    const nueva = cancionesFirebase.find(c =>
+      c.id === detalleActual.id || claveCancion(c) === claveCancion(detalleActual)
+    );
+    if (nueva) {
+      detalleActual = nueva;
+      window.detalleActual = nueva;
+      document.getElementById("detalleLetra").textContent = nueva.letra ||
+        "La letra completa no está disponible.";
+      actualizarBotonDetalle();
+    }
+  }
   dibujar();
 });
 
