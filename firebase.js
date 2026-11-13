@@ -19,7 +19,7 @@ const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
 export { auth, db, googleProvider };
-import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
+import { collection, addDoc, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
 
 window.enviarCancionFirebase = async function(cancion) {
   if (!auth.currentUser) {
@@ -28,7 +28,7 @@ window.enviarCancionFirebase = async function(cancion) {
   }
 
   try {
-    await addDoc(collection(db, "canciones"), {
+    await setDoc(doc(db, "canciones", cancion.id), {
       titulo: cancion.titulo,
       artista: cancion.artista,
       letra: cancion.letra,
