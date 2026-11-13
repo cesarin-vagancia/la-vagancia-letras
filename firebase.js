@@ -44,7 +44,7 @@ window.enviarCancionFirebase = async function(cancion) {
   }
 };
 
-import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
+
 
 window.aprobarCorreccion = async function(solicitudId, cancionId, nuevaLetra) {
   if (!auth.currentUser) {
