@@ -1057,7 +1057,7 @@ async function cargarCorrecciones() {
 
       const aprobar = document.createElement("button");
       aprobar.textContent = "✅ Aprobar";
-      aprobar.disabled = !cancion.exists();
+      aprobar.disabled = false;
 
       const rechazar = document.createElement("button");
       rechazar.textContent = "❌ Rechazar";
@@ -1068,9 +1068,14 @@ async function cargarCorrecciones() {
         if (!confirm("¿Aprobar y reemplazar la letra original?")) return;
         try {
           const lote = writeBatch(db);
-          lote.update(doc(db, "canciones", datos.cancionId), {
-            letra: datos.letraPropuesta
-          });
+          
+            lote.set(doc(db, "canciones", datos.cancionId), {
+  titulo: cancion.exists() ? cancion.data().titulo : "Canción pendiente de identificar",
+artista: cancion.exists() ? cancion.data().artista : "Artista desconocido",
+letra: datos.letraPropuesta,
+estado: "aprobado"
+}, { merge: true });
+          
           lote.update(solicitud.ref, { estado: "aprobado" });
           await lote.commit();
           alert("Corrección aprobada.");
