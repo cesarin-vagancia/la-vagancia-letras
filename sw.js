@@ -1,5 +1,5 @@
- 
-const CACHE = "la-vagancia-letras-v4";
+
+const CACHE = "la-vagancia-letras-v5";
 const BASE = "/la-vagancia-letras/";
 
 const ARCHIVOS = [
@@ -46,9 +46,17 @@ self.addEventListener("fetch", (evento) => {
 
   if (solicitud.mode === "navigate") {
     evento.respondWith(
-      caches.match(BASE + "index.html").then((guardado) => {
-        return guardado || fetch(solicitud);
-      })
+      fetch(solicitud)
+        .then((respuesta) => {
+          if (respuesta.ok) {
+            const copia = respuesta.clone();
+            caches.open(CACHE).then((cache) =>
+              cache.put(BASE + "index.html", copia)
+            );
+          }
+          return respuesta;
+        })
+        .catch(() => caches.match(BASE + "index.html"))
     );
     return;
   }
