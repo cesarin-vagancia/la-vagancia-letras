@@ -383,13 +383,22 @@ function obtenerTodas() {
 }
 
 // Conserva los IDs guardados, pero usa la letra aprobada más reciente.
+
 function obtenerBiblioteca() {
-  return obtenerTodas().filter(c =>
-    guardadas.includes(c.id) || canciones.some(local =>
-      guardadas.includes(local.id) && claveCancion(local) === claveCancion(c)
+  return obtenerTodas()
+    .filter(c =>
+      guardadas.includes(c.id) || canciones.some(local =>
+        guardadas.includes(local.id) &&
+        claveCancion(local) === claveCancion(c)
+      )
     )
-  );
+    .sort((a, b) =>
+      a.titulo.localeCompare(b.titulo, "es", {
+        sensitivity: "base"
+      })
+    );
 }
+
 
 function estaGuardada(c) {
   return guardadas.includes(c.id) || canciones.some(local =>
