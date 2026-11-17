@@ -876,6 +876,8 @@ if (botonCorregir) {
 }
   await addDoc(collection(db, "solicitudesEdicion"), {
     cancionId: detalleActual.id,
+    titulo: detalleActual.titulo,
+    artista: detalleActual.artista,
     letraPropuesta: nuevaLetra.trim(),
     autorUid: auth.currentUser?.uid || null,
     estado: "pendiente",
@@ -1045,11 +1047,30 @@ async function cargarCorrecciones() {
       const tarjeta = document.createElement("div");
       tarjeta.style.cssText = "padding:15px;margin:12px 0;background:#292929;border-radius:10px;";
 
-      const cancion = await getDoc(doc(db, "canciones", datos.cancionId));
+      // Las canciones de internet no tienen necesariamente un documento en Firebase.
+      const idOriginal = String(datos.cancionId || "");
+      const esIdExterno = /^(internet-|musicbrainz-|manual-)/.test(idOriginal);
+      const referenciaOriginal = !esIdExterno && idOriginal
+        ? doc(db, "canciones", idOriginal) : null;
+      const cancion = referenciaOriginal ? await getDoc(referenciaOriginal) : null;
+      const existeOriginal = Boolean(cancion?.exists());
+      const infoOriginal = existeOriginal ? cancion.data() : {};
+
       const titulo = document.createElement("h3");
-      titulo.textContent = cancion.exists()
-        ? cancion.data().titulo
-        : "Canción no encontrada";
+      titulo.textContent = datos.titulo || infoOriginal.titulo || "Identificar canción";
+      const artistaTexto = document.createElement("p");
+      artistaTexto.textContent = datos.artista || infoOriginal.artista || "Artista por identificar";
+
+      const nombreInput = document.createElement("input");
+      nombreInput.placeholder = "Título de la canción (obligatorio)";
+      nombreInput.value = datos.titulo || infoOriginal.titulo || "";
+      const artistaInput = document.createElement("input");
+      artistaInput.placeholder = "Nombre del artista (obligatorio)";
+      artistaInput.value = datos.artista || infoOriginal.artista || "";
+      if (existeOriginal) {
+        nombreInput.style.display = "none";
+        artistaInput.style.display = "none";
+      }
 
       const letra = document.createElement("pre");
       letra.textContent = datos.letraPropuesta;
@@ -1065,23 +1086,32 @@ async function cargarCorrecciones() {
 
       aprobar.onclick = async () => {
         if (auth.currentUser?.uid !== ADMIN_UID) return;
-        if (!confirm("¿Aprobar y reemplazar la letra original?")) return;
+        const nombre = (existeOriginal ? infoOriginal.titulo : nombreInput.value).trim();
+        const artista = (existeOriginal ? infoOriginal.artista : artistaInput.value).trim();
+        if (!nombre || !artista) {
+          alert("Escribe el título y el artista antes de aprobar.");
+          return;
+        }
+        if (!confirm("¿Aprobar la letra de " + nombre + " — " + artista + "?")) return;
+        aprobar.disabled = true;
+        rechazar.disabled = true;
         try {
           const lote = writeBatch(db);
-          
-            lote.set(doc(db, "canciones", datos.cancionId), {
-  titulo: cancion.exists() ? cancion.data().titulo : "Canción pendiente de identificar",
-artista: cancion.exists() ? cancion.data().artista : "Artista desconocido",
-letra: datos.letraPropuesta,
-estado: "aprobado"
-}, { merge: true });
-          
+          const destino = existeOriginal ? referenciaOriginal : doc(collection(db, "canciones"));
+          lote.set(destino, {
+            titulo: nombre,
+            artista: artista,
+            letra: datos.letraPropuesta,
+            estado: "aprobado"
+          }, { merge: true });
           lote.update(solicitud.ref, { estado: "aprobado" });
           await lote.commit();
           alert("Corrección aprobada.");
           await cargarCorrecciones();
         } catch (error) {
-          alert("Error: " + error.message);
+          aprobar.disabled = false;
+          rechazar.disabled = false;
+          alert("Error al aprobar: " + error.message);
         }
       };
 
@@ -1096,7 +1126,7 @@ estado: "aprobado"
         }
       };
 
-      tarjeta.append(titulo, letra, aprobar, rechazar);
+      tarjeta.append(titulo, artistaTexto, nombreInput, artistaInput, letra, aprobar, rechazar);
       lista.appendChild(tarjeta);
     }
   } catch (error) {
