@@ -1154,9 +1154,12 @@ if ("serviceWorker" in navigator) {
   });
 
   onAuthStateChanged(auth, (user) => {
-    boton.style.display = user ? "none" : "inline-block";
-    usuario.style.display = user ? "inline-block" : "none";
-    usuario.textContent = user ? "Hola, " + (user.displayName || "músico") : "";
+    // Una sesión anónima no debe impedir iniciar sesión con Google.
+    const cuentaGoogle = !!user && !user.isAnonymous &&
+      user.providerData.some(p => p.providerId === "google.com");
+    boton.style.display = cuentaGoogle ? "none" : "inline-block";
+    usuario.style.display = cuentaGoogle ? "inline-block" : "none";
+    usuario.textContent = cuentaGoogle ? "Hola, " + (user.displayName || "músico") : "";
   });
 </script>
 
