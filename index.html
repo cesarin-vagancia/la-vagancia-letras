@@ -3,7 +3,7 @@
 <html lang="es">
 <head>
 <link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#101114">
+<meta name="theme-color" content="#080f20">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="La Vagancia">
@@ -203,6 +203,47 @@ button:focus-visible{outline:2px solid #fff;outline-offset:3px}
 #btn-google{background:var(--oro)!important;box-shadow:0 8px 24px #0007}
 #usuario-google{border:1px solid #494039;border-radius:12px!important;box-shadow:0 8px 24px #0007}
 @media(max-width:500px){header{padding:28px 14px 23px}main{padding:19px 13px 125px}.menu button{font-size:14px}.acciones button{flex:1 1 100%;padding:14px}.song{padding:17px}.song .acciones button{flex:1 1 100%}#detalle{padding:19px}#controlesScroll button{flex:1}#detalleLetra{line-height:1.9}}
+
+
+/* AZUL PREMIUM iOS — solo apariencia, sin alterar JavaScript ni datos */
+:root {color-scheme:dark;--fondo:#080f20;--panel:#14243b;--linea:#293b55;--oro:#7db4ff;--texto:#f5f8ff;--suave:#a6b8d0}
+html {background:#080f20}
+body {background:linear-gradient(180deg,#122746 0%,#080f20 310px,#080f20 100%);color:var(--texto);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
+header {background:transparent;border-bottom:1px solid #253a56;padding:calc(30px + env(safe-area-inset-top,0px)) 20px 23px}
+header h1 {color:#f5f8ff;font-weight:750;font-size:clamp(25px,5vw,34px);letter-spacing:-.8px}
+header p {color:#9db4d2}
+main {max-width:760px;padding:20px 16px calc(100px + env(safe-area-inset-bottom,0px))}
+input:not([type=range]),textarea {background:#14243b;border:1px solid #2c4262;border-radius:14px;color:#f5f8ff;box-shadow:none}
+input:not([type=range]):focus,textarea:focus {border-color:#72aaff;box-shadow:0 0 0 3px #72aaff24}
+#buscar {background:#182a43;padding:16px 48px 16px 16px;box-shadow:none}
+button {background:#367dd9;color:#fff;border:1px solid transparent;border-radius:13px;font-weight:650;box-shadow:none}
+button:hover {background:#4b91e9}
+button:active {transform:scale(.985)}
+.menu {background:#14243b;border:1px solid #263b57;border-radius:15px;padding:5px}
+.menu button {background:transparent;color:#aebed4;border-radius:11px}
+.menu button:hover,.menu button:focus-visible {background:#244469;color:#fff}
+#botonBuscar {background:#1c3553;border:1px solid #34547a;color:#c5dcff}
+#botonBuscar:hover {background:#27476c}
+#mensaje {color:#91a9c7}
+.song {background:#132238;border:1px solid #273c58;border-radius:17px;box-shadow:none;padding:19px}
+.song h3 {color:#f5f8ff;font-size:19px}
+.song p {color:#a7b9d0}
+.song .preview {color:#c5d3e6!important;border-left:2px solid #467dbd}
+.song .acciones button:last-child {background:#203a59;border:1px solid #35557a;color:#c9e0ff}
+#detalle {background:#101e33;border:1px solid #2b405d;border-radius:20px;box-shadow:none}
+#detalle h2 {color:#f5f8ff}
+#detalleArtista {color:#9eb4d0}
+#detalleLetra {color:#f5f8ff;line-height:1.95}
+#controlesScroll {background:#182b44;border:1px solid #304765;border-radius:15px}
+#controlesScroll label {color:#c7d8ef}
+#velocidadScroll {accent-color:#69a9ff}
+#botonCorregirLetra {background:#203b5e;border:1px solid #3b608e;color:#d1e5ff}
+#panel-correcciones {background:#080f20!important}
+#panel-correcciones h2 {color:#a6ceff}
+#btn-google {background:#367dd9!important;color:#fff!important;box-shadow:0 6px 18px #0003!important}
+#usuario-google {background:#14243b!important;border:1px solid #35516f!important;color:#fff!important;box-shadow:none!important}
+#inicio button[style*="position:absolute"] {color:#a8bbd5!important}
+@media(max-width:500px){header{padding:calc(24px + env(safe-area-inset-top,0px)) 16px 21px}main{padding:18px 13px calc(125px + env(safe-area-inset-bottom,0px))}.song{padding:17px}#detalle{padding:19px}}
 
 </style>
 </head>
