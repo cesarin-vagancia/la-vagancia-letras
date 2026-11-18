@@ -290,15 +290,42 @@ header.cantabella-header .descripcion-marca {
   header.cantabella-header .descripcion-marca {font-size:11px}
 }
 
+
+/* Logo oficial: encabezado completo, adaptable a móvil y escritorio. */
+header.cantabella-header {
+  display:block;
+  min-height:0;
+  padding:0;
+  margin:0;
+  overflow:hidden;
+  background:#080f20;
+  border-bottom:1px solid #314867;
+}
+header.cantabella-header::before,
+header.cantabella-header::after { display:none !important; content:none !important; }
+header.cantabella-header .logo-encabezado {
+  display:block;
+  width:100%;
+  height:auto;
+  max-height:420px;
+  object-fit:contain;
+  object-position:center;
+  margin:0 auto;
+}
+@media(max-width:500px) {
+  header.cantabella-header {padding:0;min-height:0;}
+  header.cantabella-header .logo-encabezado {max-height:320px;}
+}
 </style>
 </head>
 
 <body>
 
 <header class="cantabella-header">
-  <h1>LA VAGANCIA</h1>
-  <p class="subtitulo-marca">LETRAS</p>
-  <p class="descripcion-marca">Encuentra, lee y guarda tus canciones favoritas</p>
+  <img class="logo-encabezado"
+       src="./Acorde%C3%B3n%20Cantabella%20y%20letras%20brillantes.png"
+       alt="La Vagancia Letras, acordeón Cantabella rojo"
+       fetchpriority="high">
 </header>
 
 <main>
