@@ -291,30 +291,58 @@ header.cantabella-header .descripcion-marca {
 }
 
 
-/* Logo oficial: encabezado completo, adaptable a móvil y escritorio. */
+/* Encabezado compacto: tipografía original y acordeón decorativo a los lados. */
 header.cantabella-header {
-  display:block;
-  min-height:0;
-  padding:0;
-  margin:0;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  isolation:isolate;
+  min-height:150px;
+  padding:23px 205px 21px;
   overflow:hidden;
-  background:#080f20;
+  background:radial-gradient(ellipse at center,#172c49 0%,#0a172b 70%,#080f20 100%);
   border-bottom:1px solid #314867;
 }
 header.cantabella-header::before,
-header.cantabella-header::after { display:none !important; content:none !important; }
-header.cantabella-header .logo-encabezado {
-  display:block;
-  width:100%;
-  height:auto;
-  max-height:420px;
-  object-fit:contain;
-  object-position:center;
-  margin:0 auto;
+header.cantabella-header::after {
+  content:"" !important;
+  display:block !important;
+  position:absolute;
+  top:0;
+  bottom:0;
+  width:210px;
+  z-index:0;
+  opacity:.85;
+  background-image:linear-gradient(to right,rgba(8,15,32,.08),rgba(8,15,32,.45)),url("./Acorde%C3%B3n%20Cantabella%20y%20letras%20brillantes.png");
+  background-repeat:no-repeat;
+  background-size:230px 230px;
+  background-position:center -10px;
+  -webkit-mask-image:linear-gradient(to right,#000 55%,transparent 100%);
+  mask-image:linear-gradient(to right,#000 55%,transparent 100%);
+  filter:none;
 }
-@media(max-width:500px) {
-  header.cantabella-header {padding:0;min-height:0;}
-  header.cantabella-header .logo-encabezado {max-height:320px;}
+header.cantabella-header::before {left:0;}
+header.cantabella-header::after {right:0;transform:scaleX(-1);}
+header.cantabella-header h1,
+header.cantabella-header .subtitulo-marca,
+header.cantabella-header .descripcion-marca {position:relative;z-index:1;text-align:center;}
+header.cantabella-header h1 {font-size:clamp(25px,3vw,38px);color:#fff;white-space:nowrap;}
+header.cantabella-header .subtitulo-marca {margin:6px 0 0;letter-spacing:.42em;color:#c9d9ef;font-size:14px;}
+header.cantabella-header .descripcion-marca {margin:10px 0 0;color:#a9bbd4;font-size:12px;}
+@media(max-width:650px) {
+  header.cantabella-header {min-height:125px;padding:20px 80px 18px;}
+  header.cantabella-header::before,header.cantabella-header::after {
+    width:105px;opacity:.65;background-size:150px 150px;background-position:center top;
+  }
+  header.cantabella-header h1 {font-size:clamp(20px,5.5vw,30px);letter-spacing:0;}
+  header.cantabella-header .subtitulo-marca {font-size:12px;margin-top:5px;}
+  header.cantabella-header .descripcion-marca {font-size:10px;margin-top:8px;}
+}
+@media(max-width:390px) {
+  header.cantabella-header {padding-left:52px;padding-right:52px;}
+  header.cantabella-header::before,header.cantabella-header::after {width:85px;opacity:.5;}
 }
 </style>
 </head>
@@ -322,10 +350,9 @@ header.cantabella-header .logo-encabezado {
 <body>
 
 <header class="cantabella-header">
-  <img class="logo-encabezado"
-       src="./Acorde%C3%B3n%20Cantabella%20y%20letras%20brillantes.png"
-       alt="La Vagancia Letras, acordeón Cantabella rojo"
-       fetchpriority="high">
+  <h1>LA VAGANCIA</h1>
+  <p class="subtitulo-marca">LETRAS</p>
+  <p class="descripcion-marca">Encuentra, lee y guarda tus canciones favoritas</p>
 </header>
 
 <main>
