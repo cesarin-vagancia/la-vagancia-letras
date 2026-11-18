@@ -508,6 +508,7 @@ function guardar(c) {
     if (!canciones.some(x => x.id === c.id)) canciones.push({...c});
   }
   guardarDatos();
+  if (window.sincronizarBiblioteca) window.sincronizarBiblioteca();
   dibujar();
   if (detalleActual && claveCancion(detalleActual) === clave) {
     actualizarBotonDetalle();
@@ -1018,6 +1019,145 @@ if ("serviceWorker" in navigator) {
   });
 </script>
 
+<!-- Sincronización privada de bibliotecas: Google + Firestore -->
+<script type="module">
+import { auth, db } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js";
+import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
+
+let usuarioActivo = null;
+let bibliotecaPreparada = false;
+let sincronizacionEnCurso = Promise.resolve();
+let generacionSesion = 0;
+const claveLocal = uid => "vaganciaBiblioteca_" + uid;
+const clavePendiente = uid => "vaganciaPendiente_" + uid;
+
+function cancionesDeBiblioteca() {
+  const elegidas = new Map();
+  for (const c of [...canciones, ...cancionesFirebase, ...resultadosInternet]) {
+    if (!c || !c.id || !c.titulo || !c.artista || !estaGuardada(c)) continue;
+    const clave = claveCancion(c);
+    const anterior = elegidas.get(clave);
+    if (!anterior || (c.letra || "").length > (anterior.letra || "").length) {
+      elegidas.set(clave, {id:String(c.id), titulo:String(c.titulo),
+        artista:String(c.artista), letra:String(c.letra || "")});
+    }
+  }
+  return [...elegidas.values()];
+}
+
+function aplicarBiblioteca(datos) {
+  const mapa = new Map();
+  for (const c of datos) {
+    if (!c || !c.id || !c.titulo || !c.artista) continue;
+    mapa.set(claveCancion(c), c);
+  }
+  const elegidas = [...mapa.values()];
+  guardadas = elegidas.map(c => c.id);
+  // Guardamos también las letras para que sigan disponibles sin conexión.
+  const otras = canciones.filter(c => !mapa.has(claveCancion(c)));
+  canciones = [...otras, ...elegidas];
+  guardarDatos();
+  dibujar();
+  if (detalleActual) actualizarBotonDetalle();
+}
+
+async function subirBiblioteca(uid, datos) {
+  // Firestore limita cada documento a 1 MiB.
+  if (JSON.stringify(datos).length > 750000) {
+    console.warn("Biblioteca demasiado grande para sincronizar en un documento.");
+    return false;
+  }
+  await setDoc(doc(db, "bibliotecas", uid), { canciones: datos });
+  return true;
+}
+
+window.sincronizarBiblioteca = () => {
+  if (!usuarioActivo || !bibliotecaPreparada) return;
+  const uid = usuarioActivo;
+  localStorage.setItem(clavePendiente(uid), "1");
+  localStorage.setItem(claveLocal(uid), JSON.stringify(cancionesDeBiblioteca()));
+  if (!navigator.onLine) return;
+  sincronizacionEnCurso = sincronizacionEnCurso.then(async () => {
+    if (usuarioActivo !== uid) return;
+    const datos = JSON.parse(localStorage.getItem(claveLocal(uid)) || "[]");
+    if (await subirBiblioteca(uid, datos)) localStorage.removeItem(clavePendiente(uid));
+  }).catch(error => console.error("No se pudo sincronizar la biblioteca:", error));
+};
+
+async function cargarBibliotecaUsuario(user) {
+  const uid = user.uid;
+  const generacion = ++generacionSesion;
+  usuarioActivo = uid;
+  bibliotecaPreparada = false;
+  // Migrar la biblioteca antigua solo una vez, a la primera cuenta Google.
+  const claveMigracion = "vaganciaBibliotecaMigrada";
+  const primeraMigracion = !localStorage.getItem(claveMigracion);
+  const datosAnteriores = primeraMigracion ? cancionesDeBiblioteca() : [];
+  const datosLocales = JSON.parse(localStorage.getItem(claveLocal(uid)) || "[]");
+  const pendientes = localStorage.getItem(clavePendiente(uid)) === "1";
+  const respaldo = primeraMigracion ? datosAnteriores : datosLocales;
+  // Mostrar copia offline inmediatamente, sin esperar a internet.
+  aplicarBiblioteca(respaldo);
+  if (!navigator.onLine) {
+    bibliotecaPreparada = true;
+    if (primeraMigracion) {
+      localStorage.setItem(claveLocal(uid), JSON.stringify(respaldo));
+      localStorage.setItem(clavePendiente(uid), "1");
+      localStorage.setItem(claveMigracion, uid);
+    }
+    return;
+  }
+  try {
+    const referencia = doc(db, "bibliotecas", uid);
+    const remoto = await getDoc(referencia);
+    if (usuarioActivo !== uid || generacion !== generacionSesion) return;
+    const nube = remoto.exists() && Array.isArray(remoto.data().canciones)
+      ? remoto.data().canciones : [];
+    let finales = nube;
+    if (primeraMigracion) {
+      const mapa = new Map(nube.map(c => [claveCancion(c), c]));
+      for (const c of respaldo) if (!mapa.has(claveCancion(c))) mapa.set(claveCancion(c), c);
+      finales = [...mapa.values()];
+    } else if (pendientes) {
+      // Los cambios sin conexión de este dispositivo tienen prioridad.
+      finales = respaldo;
+    }
+    aplicarBiblioteca(finales);
+    localStorage.setItem(claveLocal(uid), JSON.stringify(finales));
+    bibliotecaPreparada = true;
+    if (primeraMigracion || pendientes || !remoto.exists()) {
+      localStorage.setItem(clavePendiente(uid), "1");
+      if (await subirBiblioteca(uid, finales)) localStorage.removeItem(clavePendiente(uid));
+    }
+    if (primeraMigracion) localStorage.setItem(claveMigracion, uid);
+  } catch (error) {
+    console.error("No se pudo recuperar la biblioteca:", error);
+    bibliotecaPreparada = true;
+    // Conservar la copia local para intentar de nuevo al recuperar conexión.
+    if (primeraMigracion) {
+      localStorage.setItem(claveLocal(uid), JSON.stringify(respaldo));
+      localStorage.setItem(clavePendiente(uid), "1");
+      localStorage.setItem(claveMigracion, uid);
+    }
+  }
+}
+
+onAuthStateChanged(auth, user => {
+  ++generacionSesion;
+  if (user && !user.isAnonymous && user.providerData.some(p => p.providerId === "google.com")) {
+    cargarBibliotecaUsuario(user);
+  } else {
+    usuarioActivo = null;
+    bibliotecaPreparada = false;
+    // Sin cuenta Google, la biblioteca local sigue funcionando.
+  }
+});
+
+window.addEventListener("online", () => {
+  if (auth.currentUser && usuarioActivo) cargarBibliotecaUsuario(auth.currentUser);
+});
+</script>
 
 <script>
 let scrollAutomatico = null;
