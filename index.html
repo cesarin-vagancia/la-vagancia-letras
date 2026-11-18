@@ -522,6 +522,7 @@ function actualizarBotonDetalle() {
 }
 
 function verLetra(c) {
+  window.cancionParaRegresar = claveCancion(c);
   posicionBiblioteca = window.scrollY;
   detalleActual = c;
 
@@ -640,10 +641,28 @@ function regresar() {
 
   dibujar();
 
+  const tarjetas = document.querySelectorAll("#lista .song");
+
+  const cancionesVisibles = (vista === "biblioteca"
+    ? obtenerBiblioteca()
+    : obtenerTodas()
+  ).filter(c => {
+    const palabras = normalizar(buscar.value).split(" ").filter(Boolean);
+    const contenido = normalizar(c.titulo + " " + c.artista);
+    return palabras.every(p => contenido.includes(p));
+  });
+
+  const indice = cancionesVisibles.findIndex(c =>
+    claveCancion(c) === window.cancionParaRegresar
+  );
+
   requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      window.scrollTo(0, posicionBiblioteca);
-    });
+    if (indice >= 0 && tarjetas[indice]) {
+      tarjetas[indice].scrollIntoView({
+        behavior: "instant",
+        block: "center"
+      });
+    }
   });
 }
 
