@@ -162,7 +162,7 @@ pre {
 
 /* Renovación visual — no modifica lógica ni almacenamiento */
 :root{color-scheme:dark;--fondo:#0b0d10;--panel:#171a20;--linea:#30343d;--oro:#e0b865;--texto:#f5f5f4;--suave:#a6aab3}
-html{scroll-behavior:smooth}
+html{scroll-behavior:auto}
 body{background:radial-gradient(ellipse 85% 300px at 50% 0%,#282113 0%,#111318 65%,#0b0d10 100%);color:var(--texto);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;min-height:100vh}
 header{background:linear-gradient(180deg,#191a1d 0%,#111318 100%);border-bottom:1px solid #3b3325;padding:34px 18px 28px}
 header h1{color:var(--oro);font-size:clamp(27px,5vw,38px);letter-spacing:-.7px;font-weight:800}
@@ -317,6 +317,7 @@ let resultadosInternet = [];
 let vista = "todas";
 let detalleActual = null;
 let buscando = false;
+let posicionBiblioteca = 0;
 
 function guardarDatos() {
   try {
@@ -521,6 +522,7 @@ function actualizarBotonDetalle() {
 }
 
 function verLetra(c) {
+  posicionBiblioteca = window.scrollY;
   detalleActual = c;
 
   window.detalleActual = c;
@@ -628,6 +630,8 @@ async function buscarLetraFaltante(c) {
 
 
 function regresar() {
+  pausarScroll();
+
   document.getElementById("detalle")
     .classList.add("oculto");
 
@@ -635,6 +639,12 @@ function regresar() {
     .classList.remove("oculto");
 
   dibujar();
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      window.scrollTo(0, posicionBiblioteca);
+    });
+  });
 }
 
 async function consultar(url) {
